@@ -1,20 +1,31 @@
 package com.byted.camp.todolist;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.byted.camp.todolist.db.TodoContract;
+import com.byted.camp.todolist.db.TodoDbHelper;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class NoteActivity extends AppCompatActivity {
 
     private EditText editText;
     private Button addBtn;
+    private TodoDbHelper todoDbHelper = new TodoDbHelper(this);
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +74,20 @@ public class NoteActivity extends AppCompatActivity {
 
     private boolean saveNote2Database(String content) {
         // TODO 插入一条新数据，返回是否插入成功
+        SQLiteDatabase db = todoDbHelper.getWritableDatabase();
+        Date date = new Date();
+
+        ContentValues values = new ContentValues();
+        values.put(TodoContract.NodeColumns.NODE_CONTENT, content);
+        values.put(TodoContract.NodeColumns.NODE_DATE, dateFormat.format(date));
+        values.put(TodoContract.NodeColumns.NODE_STATE, 0);
+
+        // insert into :TABLE_NAME values :values;
+        long id = db.insert(TodoContract.NodeColumns.TABLE_NAME, null, values);
+        if(id > 0) {
+            Log.d("NoteActivity", "成功插入一条数据");
+            return true;
+        }
         return false;
     }
 }
